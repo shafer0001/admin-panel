@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>صفحة تحكم التقديم - MetroState</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      width: 320px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    button {
+      width: 130px;
+      padding: 12px 0;
+      margin: 10px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button#openBtn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    button#openBtn:hover {
+      background-color: #45a049;
+    }
+    button#closeBtn {
+      background-color: #f44336;
+      color: white;
+    }
+    button#closeBtn:hover {
+      background-color: #da190b;
+    }
+    #statusText {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+ <div class="container">
+ <h1>Submission Control Panel</h1>
+ <button id="openBtn">Open Submission</button>
+ <button id="closeBtn">Close Submission</button>
+ <div id="statusText">Loading status...</div>
+</div>
+
+  <script>
+    const JSONBIN_ID = "684ea3908a456b7966ae7b30";
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+    const JSONBIN_KEY = "$2a$10$sJLSPaTFQfkUZmPxX0Wfy.kjT6yweOBSmW6QFF4JvBl5/8bgiFQNy"; // استبدل بالمفتاح الصحيح
+
+    const statusText = document.getElementById("statusText");
+    const openBtn = document.getElementById("openBtn");
+    const closeBtn = document.getElementById("closeBtn");
+
+    // دالة لجلب الحالة الحالية من JSONBin
+    async function fetchStatus() {
+      try {
+        const response = await fetch(`${JSONBIN_URL}/latest`, {
+          headers: {
+            "X-Master-Key": JSONBIN_KEY
+          }
+        });
+        if (!response.ok) throw new Error("فشل في جلب الحالة");
+
+        const data = await response.json();
+        const currentStatus = data.record.status;
+        statusText.textContent = "Current Status: " + currentStatus;
+      } catch (error) {
+        statusText.textContent = "خطأ في جلب الحالة";
+        console.error(error);
+      }
+    }
+
+    // دالة لتحديث الحالة (فتح أو إغلاق)
+    async function updateStatus(newStatus) {
+      statusText.textContent = "جاري تحديث الحالة...";
+      try {
+        const response = await fetch(JSONBIN_URL, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": JSONBIN_KEY
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (!response.ok) throw new Error("فشل في تحديث الحالة");
+
+        const data = await response.json();
+        statusText.textContent = "تم تحديث الحالة إلى: " + newStatus;
+      } catch (error) {
+        statusText.textContent = "خطأ في تحديث الحالة";
+        console.error(error);
+      }
+    }
+
+    openBtn.addEventListener("click", () => updateStatus("open"));
+    closeBtn.addEventListener("click", () => updateStatus("closed"));
+
+    // جلب الحالة عند تحميل الصفحة
+    fetchStatus();
+  </script>
+
+</body>
+</html>
